@@ -1,0 +1,199 @@
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.container {
+  text-align: center;
+  width: 95%;
+  max-width: 1400px;
+}
+
+.main-content {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.video-section {
+  flex: 3;
+  min-width: 0; /* Prevents flex item from overflowing */
+}
+
+.chat-section {
+  flex: 1;
+  background: #2a2a2a;
+  border-radius: 8px;
+  height: 600px; /* Match approximate video height or fixed */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 300px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 900px) {
+  .main-content {
+    flex-direction: column;
+  }
+  .chat-section {
+    width: 100%;
+    height: 400px;
+  }
+}
+
+h1 {
+  margin-bottom: 20px;
+  color: #e50914; /* Netflix red-ish */
+}
+
+.upload-section {
+  background: #333;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+input[type="file"] {
+  margin-right: 10px;
+}
+
+button {
+  background-color: #e50914;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #b20710;
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+video {
+  width: 100%;
+  display: block;
+  max-height: 80vh;
+}
+
+.controls-info {
+  margin-top: 15px;
+  color: #aaa;
+}
+
+#connectionStatus {
+  font-weight: bold;
+  color: #ff4444;
+}
+
+#connectionStatus.connected {
+  color: #00c851;
+}
+
+/* Chat Styles */
+.chat-header {
+  padding: 15px;
+  background: #333;
+  border-bottom: 1px solid #444;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-header h3 {
+  margin: 0;
+  font-size: 1.1em;
+}
+
+.username-badge {
+  background: #e50914;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.message {
+  padding: 8px 12px;
+  border-radius: 8px;
+  max-width: 85%;
+  word-wrap: break-word;
+}
+
+.message.system {
+  align-self: center;
+  background: transparent;
+  color: #888;
+  font-style: italic;
+  font-size: 0.9em;
+  text-align: center;
+}
+
+.message.user {
+  background: #444;
+  align-self: flex-start;
+}
+
+.message.own {
+  background: #e50914;
+  align-self: flex-end;
+}
+
+.message-author {
+  font-size: 0.75em;
+  color: #aaa;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.message.own .message-author {
+  color: #ffcccc;
+  text-align: right;
+}
+
+.chat-input-area {
+  padding: 15px;
+  background: #333;
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input-area input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background: #222;
+  color: white;
+}
+
+.chat-input-area button {
+  padding: 10px 20px;
+}

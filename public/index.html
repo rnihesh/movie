@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movie Sync Party</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Movie Sync Party 🍿</h1>
+
+      <div class="main-content">
+        <div class="video-section">
+          <div class="upload-section">
+            <input type="file" id="videoInput" accept="video/*" />
+            <button id="uploadBtn">Upload Movie</button>
+            <span id="status"></span>
+          </div>
+
+          <div class="video-container">
+            <video id="mainVideo" controls>
+              <source src="" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+
+          <div class="controls-info">
+            <p>Status: <span id="connectionStatus">Disconnected</span></p>
+            <p>
+              Anyone can control the video. Play, pause, or seek to sync with
+              everyone!
+            </p>
+          </div>
+        </div>
+
+        <div class="chat-section">
+          <div class="chat-header">
+            <h3>Live Chat</h3>
+            <span id="myUsername" class="username-badge">...</span>
+          </div>
+          <div id="chatMessages" class="chat-messages"></div>
+          <div class="chat-input-area">
+            <input
+              type="text"
+              id="msgInput"
+              placeholder="Type a message..."
+              autocomplete="off"
+            />
+            <button id="sendBtn">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
