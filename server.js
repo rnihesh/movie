@@ -1,9 +1,6 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 const os = require("os");
 
 const app = express();
@@ -43,47 +40,11 @@ function getRandomName() {
   return `${adj} ${noun} ${num}`;
 }
 
-// Configure Multer for video uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = "uploads";
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir);
-    }
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    // Always save as 'current_movie.mp4' to keep it simple for this demo
-    // In a real app, you'd manage multiple files/rooms
-    cb(null, "current_movie" + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage: storage });
-
 // Serve static files from 'public' directory
 app.use(express.static("public"));
-// Serve uploaded files from 'uploads' directory
-app.use("/uploads", express.static("uploads"));
 
-// Upload endpoint
-app.post("/upload", upload.single("videoFile"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).send("No file uploaded.");
-  }
-  // Notify all clients that a new video is available
-  const videoUrl = `/uploads/${req.file.filename}`;
-  io.emit("videoUploaded", { url: videoUrl, filename: req.file.originalname });
-  res.json({ message: "File uploaded successfully", url: videoUrl });
-});
-
-// Current state of the video room
-let currentState = {
-  isPlaying: false,
-  currentTime: 0,
-  timestamp: Date.now(),
-};
-
+// Current state
+let hostId = null;
 const users = {};
 
 io.on("connection", (socket) => {
@@ -91,9 +52,8 @@ io.on("connection", (socket) => {
   users[socket.id] = username;
   console.log(`User connected: ${username}`);
 
-  // Send current state to new user
-  socket.emit("syncState", currentState);
-  socket.emit("welcome", { username: username });
+  // Send welcome message
+  socket.emit("welcome", { username: username, hostId: hostId });
 
   // Notify others
   socket.broadcast.emit("chatMessage", {
@@ -101,51 +61,29 @@ io.on("connection", (socket) => {
     text: `${username} joined the party!`,
   });
 
-  // Check if a video exists and tell the new user
-  const uploadDir = "uploads";
-  if (fs.existsSync(uploadDir)) {
-    const files = fs.readdirSync(uploadDir);
-    const videoFile = files.find((f) => f.startsWith("current_movie"));
-    if (videoFile) {
-      socket.emit("videoUploaded", {
-        url: `/uploads/${videoFile}`,
-        filename: "Current Movie",
-      });
-    }
-  }
+  // If this user becomes a host
+  socket.on("becomeHost", () => {
+    hostId = socket.id;
+    socket.broadcast.emit("hostChanged", { hostId: hostId });
+    console.log(`New host: ${username} (${hostId})`);
 
-  // Handle Play
-  socket.on("play", (time) => {
-    currentState.isPlaying = true;
-    currentState.currentTime = time;
-    currentState.timestamp = Date.now();
-    socket.broadcast.emit("play", time);
+    io.emit("chatMessage", {
+      type: "system",
+      text: `${username} is now hosting a movie!`,
+    });
   });
 
-  // Handle Pause
-  socket.on("pause", (time) => {
-    currentState.isPlaying = false;
-    currentState.currentTime = time;
-    currentState.timestamp = Date.now();
-    socket.broadcast.emit("pause", time);
-  });
-
-  // Handle Seek
-  socket.on("seek", (time) => {
-    currentState.currentTime = time;
-    currentState.timestamp = Date.now();
-    socket.broadcast.emit("seek", time);
-  });
-
-  // Handle Sync Request (optional, for drift correction)
-  socket.on("syncRequest", (time) => {
-    // Logic to handle drift if needed
+  // WebRTC Signaling
+  socket.on("signal", (data) => {
+    io.to(data.to).emit("signal", {
+      signal: data.signal,
+      from: socket.id,
+    });
   });
 
   // Handle Chat
   socket.on("chatMessage", (msg) => {
     const user = users[socket.id] || "Anonymous";
-    console.log(`Chat from ${user}: ${msg}`);
     io.emit("chatMessage", {
       type: "user",
       username: user,
@@ -158,10 +96,20 @@ io.on("connection", (socket) => {
     const user = users[socket.id];
     console.log(`User disconnected: ${user}`);
     delete users[socket.id];
-    io.emit("chatMessage", {
-      type: "system",
-      text: `${user} left the party.`,
-    });
+
+    if (socket.id === hostId) {
+      hostId = null;
+      io.emit("hostLeft");
+      io.emit("chatMessage", {
+        type: "system",
+        text: `The host ${user} left. Stream ended.`,
+      });
+    } else {
+      io.emit("chatMessage", {
+        type: "system",
+        text: `${user} left the party.`,
+      });
+    }
   });
 });
 

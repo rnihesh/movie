@@ -7,53 +7,76 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="container">
-      <h1>Movie Sync Party 🍿</h1>
-
-      <div class="main-content">
-        <div class="video-section">
-          <div class="upload-section">
-            <input type="file" id="videoInput" accept="video/*" />
-            <button id="uploadBtn">Upload Movie</button>
-            <span id="status"></span>
-          </div>
-
-          <div class="video-container">
-            <video id="mainVideo" controls>
-              <source src="" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
-
-          <div class="controls-info">
-            <p>Status: <span id="connectionStatus">Disconnected</span></p>
-            <p>
-              Anyone can control the video. Play, pause, or seek to sync with
-              everyone!
-            </p>
+    <div class="app-container">
+      <!-- Sidebar / Chat -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h2><i class="fa-solid fa-film"></i> WatchParty</h2>
+          <div class="user-profile">
+            <div class="avatar" id="myAvatar">?</div>
+            <span id="myUsername">Loading...</span>
           </div>
         </div>
 
-        <div class="chat-section">
-          <div class="chat-header">
-            <h3>Live Chat</h3>
-            <span id="myUsername" class="username-badge">...</span>
+        <div class="room-info">
+          <div class="status-badge" id="connectionStatus">
+            <div class="dot"></div>
+            <span class="text">Connecting...</span>
           </div>
-          <div id="chatMessages" class="chat-messages"></div>
-          <div class="chat-input-area">
-            <input
-              type="text"
-              id="msgInput"
-              placeholder="Type a message..."
-              autocomplete="off"
-            />
-            <button id="sendBtn">Send</button>
+          <div class="host-info">
+            <span id="status">Waiting for host...</span>
+          </div>
+        </div>
+
+        <div class="chat-container">
+          <div class="chat-messages" id="chatMessages">
+            <div class="message system"><span>Welcome to the party!</span></div>
+          </div>
+          <div class="chat-input">
+            <input type="text" id="msgInput" placeholder="Type a message..." />
+            <button id="sendBtn">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content / Video -->
+      <div class="main-content">
+        <div class="video-wrapper" id="videoContainer">
+          <!-- Video Element -->
+          <video id="mainVideo" playsinline controls></video>
+
+          <!-- Chat Overlay (appears over video) -->
+          <div id="chatOverlay" class="chat-overlay"></div>
+
+          <!-- Start/Join Overlay -->
+          <div id="startOverlay" class="start-overlay hidden">
+            <button id="startBtn" class="primary-btn">
+              <i class="fa-solid fa-play"></i> Click to Join Party
+            </button>
+          </div>
+        </div>
+
+        <div class="controls-bar">
+          <div class="left-controls">
+            <label for="videoInput" class="action-btn host-btn">
+              <i class="fa-solid fa-upload"></i> Host Movie
+            </label>
+            <input type="file" id="videoInput" accept="video/*" hidden />
+          </div>
+
+          <div class="right-controls">
+            <button id="fullscreenBtn" class="icon-btn" title="Fullscreen">
+              <i class="fa-solid fa-expand"></i>
+            </button>
           </div>
         </div>
       </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
