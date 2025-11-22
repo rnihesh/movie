@@ -78,7 +78,7 @@ socket.on("chatMessage", (data) => {
 });
 
 // --- Video Upload Handling ---
-uploadBtn.addEventListener("click", async () => {
+uploadBtn.addEventListener("click", () => {
   const file = videoInput.files[0];
   if (!file) {
     alert("Please select a file first");
@@ -88,27 +88,52 @@ uploadBtn.addEventListener("click", async () => {
   const formData = new FormData();
   formData.append("videoFile", file);
 
-  statusSpan.textContent = "Uploading...";
+  statusSpan.textContent = "Starting upload...";
   uploadBtn.disabled = true;
 
-  try {
-    const response = await fetch("/upload", {
-      method: "POST",
-      body: formData,
-    });
+  const xhr = new XMLHttpRequest();
+  const startTime = Date.now();
 
-    if (response.ok) {
+  xhr.upload.addEventListener("progress", (event) => {
+    if (event.lengthComputable) {
+      const percentComplete = (event.loaded / event.total) * 100;
+
+      // Calculate speed
+      const timeElapsed = (Date.now() - startTime) / 1000; // in seconds
+      const uploadSpeed = event.loaded / timeElapsed; // bytes per second
+
+      // Format speed
+      let speedText = "";
+      if (uploadSpeed > 1024 * 1024) {
+        speedText = (uploadSpeed / (1024 * 1024)).toFixed(2) + " MB/s";
+      } else {
+        speedText = (uploadSpeed / 1024).toFixed(2) + " KB/s";
+      }
+
+      statusSpan.textContent = `Uploading: ${percentComplete.toFixed(
+        1
+      )}% (${speedText})`;
+    }
+  });
+
+  xhr.addEventListener("load", () => {
+    if (xhr.status >= 200 && xhr.status < 300) {
       statusSpan.textContent = "Upload complete!";
       videoInput.value = ""; // Clear input
     } else {
       statusSpan.textContent = "Upload failed.";
     }
-  } catch (error) {
-    console.error("Error:", error);
-    statusSpan.textContent = "Error uploading.";
-  } finally {
     uploadBtn.disabled = false;
-  }
+  });
+
+  xhr.addEventListener("error", () => {
+    console.error("Error uploading");
+    statusSpan.textContent = "Error uploading.";
+    uploadBtn.disabled = false;
+  });
+
+  xhr.open("POST", "/upload");
+  xhr.send(formData);
 });
 
 socket.on("videoUploaded", (data) => {
